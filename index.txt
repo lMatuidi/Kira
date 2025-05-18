@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interactive Love Letter</title>
+  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
+  <style>
+    .music-toggle {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      width: 40px;
+      height: 40px;
+      background: #e63946;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+
+    body, html {
+      height: 100%;
+      margin: 0;
+      background-color: #ffeef2;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      font-family: 'Great Vibes', cursive;
+    }
+
+    .envelope-container {
+      position: relative;
+      width: 600px;
+      height: 424px;
+      transform: translateY(-100vh);
+      animation: dropIn 1s ease-out forwards;
+      animation-delay: 0.5s;
+    }
+    @keyframes dropIn { to { transform: translateY(0); } }
+
+    .envelope {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(145deg, #f8cdd0, #f2a6ae);
+      border-radius: 0 0 12px 12px;
+      box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+    }
+
+    .flap {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 60%;
+      background: linear-gradient(145deg, #f2a6ae, #e89aa2);
+      clip-path: polygon(0 0, 50% 100%, 100% 0);
+      transform-origin: top;
+      transition: transform 0.6s ease;
+      transform: rotateX(0deg);
+    }
+
+    .heart {
+      position: absolute;
+      font-size: 28px;
+      color: #e63946;
+      opacity: 0;
+      animation: popSlow 3s ease-out infinite;
+      pointer-events: none;
+    }
+    @keyframes popSlow {
+      0% { transform: scale(0); opacity: 0; }
+      10% { transform: scale(1.4); opacity: 1; }
+      50% { transform: scale(1.2); opacity: 0.5; }
+      100% { transform: scale(1); opacity: 0; }
+    }
+
+    .seal {
+      position: absolute;
+      top: 58%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 120px;
+      height: 120px;
+      cursor: pointer;
+      opacity: 1;
+      transition: all 0.3s ease;
+      z-index: 2;
+    }
+
+    .seal svg {
+      width: 100%;
+      height: 100%;
+      fill: #e63946 !important;
+      transition: transform 0.2s ease, filter 0.2s ease;
+    }
+
+    .seal:hover svg {
+      transform: scale(1.15);
+      filter: drop-shadow(0 0 12px rgba(230,57,70,0.7));
+    }
+
+    .letter {
+      position: absolute;
+      top: 30px;
+      left: 50%;
+      transform: translateX(-50%) translateY(30px) scaleY(0);
+      width: 560px;
+      height: 364px;
+      background: white;
+      border-radius: 4px;
+      padding: 20px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      overflow-y: auto;
+      font-size: 20px;
+      line-height: 1.6;
+      opacity: 0;
+      transition: transform 0.6s ease, opacity 0.6s ease;
+      transform-origin: top;
+      z-index: 1;
+    }
+    .letter.visible {
+      transform: translateX(-50%) translateY(30px) scaleY(1);
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+  <button class="music-toggle" id="musicToggle">♪</button>
+
+  <!-- Spotify embed for "Deep" (4:29) -->
+  <iframe
+    id="bgMusic"
+    src="https://open.spotify.com/embed/track/7qt641kuazHzMIn4lbkns5"
+    width="0" height="0"
+    frameborder="0"
+    allow="autoplay; encrypted-media"
+    style="position:absolute; pointer-events:none;">
+  </iframe>
+
+  <audio id="popSound">
+    <source src="https://www.soundjay.com/buttons/sounds/button-21.mp3" type="audio/mpeg">
+  </audio>
+
+  <div class="envelope-container" id="container">
+    <div class="envelope" id="envelope">
+      <div class="flap" id="flap"></div>
+      <div class="seal" id="seal">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5
+           2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81
+           14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55
+           11.54L12 21.35z"/>
+        </svg>
+      </div>
+      <div class="letter" id="letter">
+        <h2 style="text-align:center; margin-top:0;">My Dearest Love,</h2>
+        <p>This is a sample text to show how your letter will look.</p>
+        <p>You can scroll to read more.</p>
+        <p>All your heartfelt words will appear here.</p>
+        <p>Forever yours,</p>
+        <p>❤️</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const music = document.getElementById('bgMusic');
+    const musicToggle = document.getElementById('musicToggle');
+    const popSound = document.getElementById('popSound');
+    const seal = document.getElementById('seal');
+    const flap = document.getElementById('flap');
+    const letter = document.getElementById('letter');
+    let hasBeenOpened = false;
+
+    // Autoplay on first user interaction
+    document.addEventListener('click', () => {
+      music.contentWindow.postMessage({ event: 'command', func: 'play' }, '*');
+    }, { once: true });
+
+    // Loop every 4:29 (in milliseconds)
+    setInterval(() => {
+      music.contentWindow.postMessage({ event: 'command', func: 'play' }, '*');
+    }, 4 * 60 * 1000 + 29 * 1000);
+
+    // Mute / unmute toggle
+    musicToggle.addEventListener('click', () => {
+      const isMuted = musicToggle.textContent === '🔇';
+      const cmd = isMuted ? 'play' : 'pause';
+      music.contentWindow.postMessage({ event: 'command', func: cmd }, '*');
+      musicToggle.textContent = isMuted ? '♪' : '🔇';
+    });
+
+    // Heart particles
+    function spawnHearts() {
+      const h = document.createElement('div');
+      h.className = 'heart';
+      h.textContent = '❤';
+      h.style.left = Math.random() * 100 + '%';
+      h.style.top = Math.random() * 100 + '%';
+      document.body.appendChild(h);
+      setTimeout(() => h.remove(), 3000);
+    }
+    setInterval(spawnHearts, 300);
+
+    // Envelope open animation
+    seal.addEventListener('click', () => {
+      if (!hasBeenOpened) {
+        popSound.currentTime = 0;
+        popSound.play();
+        flap.style.transform = 'rotateX(180deg)';
+        seal.style.opacity = '0';
+        setTimeout(() => letter.classList.add('visible'), 600);
+        hasBeenOpened = true;
+      }
+    });
+  </script>
+</body>
+</html>
